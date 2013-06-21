@@ -1,0 +1,28 @@
+{
+  "name": "j-dms",
+  "description": "Allows JDB to back client and server side models.",
+  "version": "0.0.0",
+  "author": "dgsan",
+  "contributors": [
+    { "name": "dgsan" }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dgsan/j-dms"
+  },
+  "main": "j-dms.js",
+  "scripts": {
+    "test": "mocha test/*.test.js"
+  },
+  "keywords": [ ],
+  "engines": [
+    "node >= 0.10.x"
+  ],
+  "dependencies": {
+    "jdb-gfk": ">= 0.0.x"
+  },
+  "devDependencies": {
+    "mocha": "1.9.x"
+  },
+  "license": "To be determined. Thinking MIT (OSI version) or Apache 2."
+}
