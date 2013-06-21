@@ -3,13 +3,16 @@ var ServerSide = require('../j-dms').ServerSide;
 var ClientSide = require('../j-dms').ClientSide;
 var API = require('../j-dms').API;
 
+
+var StorageModels;
+
 describe('Initialize j-dms as a model resource provider.', function(){
     
     
     describe('Server and API should accept identical configuration.', function() {
         
         it('should configure server models piece by piece', function(done){
-            var StorageModels = new ServerSide({
+            StorageModels = new ServerSide({
                 db: {
                     type: 'memory'
                 },
@@ -36,7 +39,7 @@ describe('Initialize j-dms as a model resource provider.', function(){
         });
     
         it('should configure server models chained', function(done){
-            var StorageModels = (new ServerSide())
+            StorageModels = (new ServerSide())
                 .db({
                     type: 'memory'
                 })
@@ -48,6 +51,20 @@ describe('Initialize j-dms as a model resource provider.', function(){
             assert.ok(StorageModels.Example1);
         
             done(); 
+        });
+        
+        it('should configure API by providing storage', function(done){
+            
+            var StorageAPI = new API({options: {lib: 'backbone', rootURL: '/api', storage: StorageModels}});
+            
+            StorageAPI.init();
+    
+            var request  = {};
+            var response = {};
+            StorageAPI.handleRequest(request, response);
+            
+            done(); 
+            
         });
         
         it('should configure API piece by piece', function(done){
