@@ -3,53 +3,71 @@ var ServerSide = require('../j-dms').ServerSide;
 var ClientSide = require('../j-dms').ClientSide;
 var API = require('../j-dms').API;
 
+var StorageModels, ModelList, ModelArg0, ModelArg1, ModelArg2, ModelArg3, ModelArg4, defaultDB, defaultOptions, defaultArg, Example0;
 
-var StorageModels;
+function stringModel(modelName, propertyName){
+    var model = {};
+    model[modelName] = {};
+    model[modelName][propertyName] = {type: String};
+    return model;
+}
+
+
+function arrayOfModels(listOfNames){
+    var m = [];
+    var name;
+    while(name = listOfNames.pop()){
+        m.push(stringModel(name, 'word'));
+    }
+    return m;
+}
+
+var setup = function(){
+    ModelList = arrayOfModels(['DemoModel0','DemoModel1','DemoModel2','DemoModel3']);
+    ModelArg0 = {'ArgModel0': {'word': {type: String}}};
+    ModelArg1 = {'ArgModel1': {'word': {type: String}}};
+    ModelArg2 = {'ArgModel2': {'word': {type: String}}};
+    ModelArg3 = {'ArgModel3': {'word': {type: String}}};
+    ModelArg4 = {'ArgModel4': {'word': {type: String}}};
+    defaultDB = {type: 'memory'};
+    defaultOptions = {lib: 'backbone'};
+    defaultArg = { db: defaultDB, options: defaultOptions, models: ModelList};
+    
+};
+
 
 describe('Initialize j-dms as a model resource provider.', function(){
     
+    before(setup);
     
     describe('Server and API should accept identical configuration.', function() {
         
         it('should configure server models piece by piece', function(done){
-            StorageModels = new ServerSide({
-                db: {
-                    type: 'memory'
-                },
-                options: {lib: 'backbone'},
-                models: [{'Fake': {'text': {type: String}}}]
-            }); 
+            StorageModels = new ServerSide(defaultArg); 
             
-            StorageModels.models([{'Example1': {'name': {type: String}}}, 
-                                  {'Example2': {'name': {type: String}}}]); 
+            StorageModels.models([ModelArg0, ModelArg1]); 
             
-            StorageModels.models({'Example1': {'name': {type: String}}}, 
-                                    {'Example2': {'name': {type: String}}},
-                                    {'Example3': {'name': {type: String}}}); 
+            StorageModels.models(ModelArg2, ModelArg3, ModelArg4); 
             
-            StorageModels.define('Demo', {'title': {type: String}});
+            Example0 = StorageModels.define('Example0', {'title': {type: String}});
             
-            assert.ok(typeof StorageModels == 'object');
+            //console.log(StorageModels.modelSettings());
             
             StorageModels.init();
     
-            assert.ok(StorageModels.Demo);
-            
             done(); 
         });
     
+    
+        
+    
         it('should configure server models chained', function(done){
             StorageModels = (new ServerSide())
-                .db({
-                    type: 'memory'
-                })
-                .options({lib: 'backbone'})
-                .models([{'Example1': {'name': {type: String}}}, 
-                        {'Example2': {'name': {type: String}}}])
+                .db(defaultDB)
+                .options(defaultOptions)
+                .models(ModelList)
                 .init();
                 
-            assert.ok(StorageModels.Example1);
-        
             done(); 
         });
         
@@ -59,9 +77,9 @@ describe('Initialize j-dms as a model resource provider.', function(){
             
             StorageAPI.init();
     
-            var request  = {};
-            var response = {};
-            StorageAPI.handleRequest(request, response);
+            // var request  = {};
+            // var response = {};
+            // StorageAPI.handleRequest(request, response);
             
             done(); 
             
@@ -69,68 +87,73 @@ describe('Initialize j-dms as a model resource provider.', function(){
         
         it('should configure API piece by piece', function(done){
             var StorageAPI = new API({
-                db: {
-                    type: 'memory'
-                },
+                db: defaultDB,
                 options: {lib: 'backbone', rootURL: '/api'},
-                models: [{'Fake': {'text': {type: String}}}]
+                models: ModelList
             }); 
             
-            StorageAPI.models([{'Example1': {'name': {type: String}}}, 
-                                  {'Example2': {'name': {type: String}}}]); 
+            StorageAPI.models([ModelArg0, ModelArg1]); 
             
-            StorageAPI.models({'Example1': {'name': {type: String}}}, 
-                                    {'Example2': {'name': {type: String}}},
-                                    {'Example3': {'name': {type: String}}}); 
+            StorageAPI.models(ModelArg2, ModelArg3, ModelArg4); 
             
-            StorageAPI.define('Demo', {'title': {type: String}});
-            
-            assert.ok(typeof StorageAPI == 'object');
+            Example0 = StorageAPI.define('Example0', {'title': {type: String}});
             
             StorageAPI.init();
     
-            var request  = {};
-            var response = {};
-            StorageAPI.handleRequest(request, response);
+            /*
+                var request  = {};
+                var response = {};
+                StorageAPI.handleRequest(request, response);
+            */
             
             done(); 
         });
         
         it('should configure API chained', function(done){
             var StorageAPI = (new API())
-                .db({
-                    type: 'memory'
-                })
+                .db(defaultDB)
                 .options({lib: 'backbone', rootURL:'/api'})
-                .models([{'Example1': {'name': {type: String}}}, 
-                        {'Example2': {'name': {type: String}}}])
+                .models(ModelList)
                 .init();
                 
-            assert.ok(typeof StorageAPI == 'object');
-            
+            /*
             var request  = {};
             var response = {};
             StorageAPI.handleRequest(request, response);
+            */
         
             done(); 
         });
     });
     
     describe('Client Side should accept client configuration.', function() {
-        it('should configure client side chained', function(done) {
-            var SyncModels = (new ClientSide())
-                .models(['Demo', 'Example'])
-                .options({lib: 'backbone', rootUrl:'/api'})
-                .init()
+        
+        it('should configure client side piece by piece', function(done) {
+            var ClientModels = new ClientSide({
+                models: ['ArgModel1', 'DemoModel2'],
+                options: [{lib: 'backbone', rootUrl:'/api'}]
+            });
 
-            assert.ok(SyncModels.Demo);
+            ClientModels.add('ArgModel0');
             
-            SyncModels.add('Fake');
+            ClientModels.init();
             
-            assert.ok(SyncModels.Fake);
+            done();
+        });
+        
+        it('should configure client side chained', function(done) {
+            var ClientModels = (new ClientSide())
+                .models(['ArgModel1', 'DemoModel2'])
+                .options({lib: 'backbone', rootUrl:'/api'})
+                .init();
+
+            ClientModels.add('ArgModel0');
             
             done();
         });
     });
+    
+    
 });
+
 
