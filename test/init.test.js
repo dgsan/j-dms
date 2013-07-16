@@ -68,7 +68,10 @@ describe('Initialize j-dms as a model resource provider.', function(){
                 .models(ModelList)
                 .init();
                 
-            done(); 
+            done(function(models){
+               // models.User 
+                
+            }); 
         });
         
         it('should configure API by providing storage', function(done){
