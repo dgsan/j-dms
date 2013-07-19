@@ -31,4 +31,14 @@ dbModels.User.findOne({where: {name: 'Ted'}}, function (err, p) {
     console.log('Found after save!');
     console.log(err);
     console.log(p);
+    // New user has no name or bio!
+    var user2 = new Models.User();
+    user2.set({id: 1});
+    user2.fetch({success: function(model, response, options) { 
+        console.log("Ope, found it. (BB)");
+        console.log(model);
+    }}); 
+
 });
+
+
