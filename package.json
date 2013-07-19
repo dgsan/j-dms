@@ -12,7 +12,7 @@
   },
   "main": "j-dms.js",
   "scripts": {
-    "test": "mocha test/*.test.js"
+    "test": "mocha --growl --globals getSchema --timeout 15000 test/*.test.js"
   },
   "keywords": [ ],
   "engines": [

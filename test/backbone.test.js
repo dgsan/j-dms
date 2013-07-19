@@ -1,12 +1,15 @@
-var BBlib = require("../lib/clients/backboneLib.js");
+var Splicer = require("../lib/clients/backboneSplicer.js");
 
 var Schema = require("jugglingdb").Schema;
 
+var assert = require('assert')
 var db = new Schema('memory');
-
 var dbModels = {};
 
 var model;
+var Models;
+var user;
+var user2;
 
 dbModels.User = db.define('User', {
     name:         String,
@@ -16,29 +19,52 @@ dbModels.User = db.define('User', {
     age:          Number
 });
 
-var Models = BBlib.splice(dbModels);
+describe('Using JDB to back a Backbone Model', function() {
+    
+    it('Should make model instances', function(done) {
+        
+        Models = Splicer.splice(dbModels);
 
-var user = new Models.User();
+        user = new Models.User();
+        user.set({name: 'Ted', bio: 'Ted eats chicken.'});
+        
+        assert.equal(user.get('name'), 'Ted');
+        assert.equal(user.get('bio'), 'Ted eats chicken.');
+        
+        done();
+    })
+    
+    it('Should save the model', function(done) {
+        
+        // This will still save the whole thing since there's no patch option, I guess?
+        user.save({}, { success: function () {
+            assert.equal(true, true); // Just checking it fires.
+            done();
+        }});
+        
+    });
+    
+    
+    it('Should have materialized the model to JDB', function(done) {
+    
+        dbModels.User.findOne({where: {name: 'Ted'}}, function (err, p) {
+            assert.equal(p.name, 'Ted');
+            assert.equal(p.bio, 'Ted eats chicken.');
+            done();
+        });
+    
+    });
+    
+    it('Should be retrievable from the Backbone model', function(done) {
 
-user.set({name: 'Ted', bio: 'Ted eats chicken.'});
+        user2 = new Models.User();
+        user2.set({id: 1});
+        user2.fetch({success: function(model, response, options) {
+            assert.equal(model.get('name'), 'Ted');
+            assert.equal(model.get('bio'), 'Ted eats chicken.');
+            done();
+        }}); 
 
-// This will still save the whole thing since there's no patch option, I guess?
-user.save({}, { success: function () {
-    console.log('callback');
-}});
-
-dbModels.User.findOne({where: {name: 'Ted'}}, function (err, p) {
-    console.log('Found after save!');
-    console.log(err);
-    console.log(p);
-    // New user has no name or bio!
-    var user2 = new Models.User();
-    user2.set({id: 1});
-    user2.fetch({success: function(model, response, options) { 
-        console.log("Ope, found it. (BB)");
-        console.log(model);
-    }}); 
-
+    });
+    
 });
-
-
